@@ -3,171 +3,193 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>極簡風格電子雜誌</title>
+  <title>高雄市四維長青學苑人物專欄 - 大人說</title>
   <link rel="stylesheet" href="styles.css">
   <!-- 引入 StPageFlip 翻頁套件 -->
   <script src="https://cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/js/page-flip.browser.js"></script>
+  <!-- 引入 PapaParse 用於快速解析 CSV -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
 </head>
 <body>
 
-  <div class="header-bar">
-    <h1>DIGITAL MAGAZINE</h1>
-    <p>翻閱最新專題與文章</p>
+  <!-- 頂部標題區 -->
+  <header class="header-bar">
+    <h1>WHAT ADULTS SAY</h1>
+    <p>大人說的那些事 ｜ 文章專欄</p>
+  </header>
+
+  <!-- 主要內容區：左側選單 + 右側雜誌 -->
+  <div class="main-layout">
+    
+    <!-- 左側文章列表選單 -->
+    <aside class="sidebar">
+      <h2>📚 文章目錄</h2>
+      <ul id="article-list">
+        <li class="loading-item">載入文章列表中...</li>
+      </ul>
+    </aside>
+
+    <!-- 右側雜誌閱讀區 -->
+    <main class="magazine-area">
+      <div id="loading" class="loading">正在載入文章內容...</div>
+
+      <div class="magazine-container">
+        <div id="magazine" class="magazine">
+          
+          <!-- Page 1: 封面 -->
+          <div class="page page-cover">
+            <div class="page-content">
+              <div class="cover-tag">ESSAY & ARTICLE</div>
+              <h1 id="doc-title">請選擇文章</h1>
+              <p id="doc-subtitle" class="subtitle">---</p>
+            </div>
+          </div>
+
+          <!-- Page 2: 左頁 (前半段文字) -->
+          <div class="page">
+            <div class="page-content">
+              <span class="page-number">- 01 -</span>
+              <div class="article-body" id="doc-body-1"></div>
+            </div>
+          </div>
+
+          <!-- Page 3: 右頁 (後半段文字) -->
+          <div class="page">
+            <div class="page-content">
+              <span class="page-number">- 02 -</span>
+              <div class="article-body" id="doc-body-2"></div>
+            </div>
+          </div>
+
+          <!-- Page 4: 封底 -->
+          <div class="page page-back">
+            <div class="page-content">
+              <div class="back-footer">
+                <h3>END OF ARTICLE</h3>
+                <p>感謝閱讀 ｜ 大人說的那些事</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </main>
   </div>
 
-  <!-- 載入中動畫 -->
-  <div id="loading" class="loading">正在從 Google Docs 載入雜誌內容...</div>
+  <script>
+    // 已更新為你的 Google 試算表 CSV 網址
+    const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQWytixYJXzWPyNdLUBifTSZn33WLv89xBwAGeiYLaH2dJR-jtLmoVLOxsbql_sKObHHVylv62teioL/pub?output=csv';
 
-  <!-- 雜誌主體容器 -->
-  <div class="magazine-container">
-    <div id="magazine" class="magazine">
-      
-      <!-- Page 1: 封面 -->
-      <div class="page page-cover">
-        <div class="page-content">
-          <div class="cover-tag">CULTURE & LIFESTYLE</div>
-          <h1 id="doc-title">文章標題載入中...</h1>
-          <p id="doc-subtitle" class="subtitle">副標題 / 日期</p>
-          <div class="cover-image-box">
-            <img id="img-1" src="" alt="封面照片">
-          </div>
-        </div>
-      </div>
+    let articlesData = [];
+    let pageFlipInstance = null;
 
-      <!-- Page 2: 左頁（圖文排版） -->
-      <div class="page">
-        <div class="page-content">
-          <span class="page-number">- 01 -</span>
-          <div class="article-body" id="doc-body-1">
-            <!-- 前半段文字由 JS 動態填入 -->
-          </div>
-          <div class="single-image-box">
-            <img id="img-2" src="" alt="插圖 1">
-          </div>
-        </div>
-      </div>
-
-      <!-- Page 3: 右頁（大圖與後半段文字） -->
-      <div class="page">
-        <div class="page-content">
-          <span class="page-number">- 02 -</span>
-          <div class="featured-image-box">
-            <img id="img-3" src="" alt="插圖 2">
-          </div>
-          <div class="article-body" id="doc-body-2">
-            <!-- 後半段文字由 JS 動態填入 -->
-          </div>
-        </div>
-      </div>
-
-      <!-- Page 4: 封底 (搭配第4張圖) -->
-      <div class="page page-back">
-        <div class="page-content">
-          <div class="back-image-box">
-            <img id="img-4" src="" alt="封底照片">
-          </div>
-          <div class="back-footer">
-            <h3>THANK YOU FOR READING</h3>
-            <p>Powered by Google Docs & GitHub Pages</p>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-<script>
-    const GOOGLE_DOC_PUB_URL = 'https://docs.google.com/document/d/e/2PACX-1vQowupc3JSIMzxndNgHI1Dg6gTIJnAdtPSw87lKEwqDYXk5AaGSznDXBaOVjWcFqsStc-v_CZBv-BY0/pub';
-
-    async function loadGoogleDoc() {
-      const loadingEl = document.getElementById('loading');
-      
+    async function loadArticles() {
       try {
-        // 使用更穩定的 corsproxy.io 代理服務
-        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(GOOGLE_DOC_PUB_URL)}`;
-        const response = await fetch(proxyUrl);
-        
-        if (!response.ok) {
-          throw new Error(`HTTP 錯誤！狀態碼：${response.status}`);
-        }
+        const response = await fetch(GOOGLE_SHEET_CSV_URL);
+        const csvText = await response.text();
 
-        const htmlText = await response.text();
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(htmlText, 'text/html');
-
-        // 1. 抓取文字與標題
-        const titleEl = doc.querySelector('h1') || doc.querySelector('p');
-        const subtitleEl = doc.querySelector('h2') || doc.querySelectorAll('p')[1];
-        
-        const paragraphs = Array.from(doc.querySelectorAll('p'))
-          .map(p => p.innerText.trim())
-          .filter(text => text.length > 0);
-
-        if (paragraphs.length === 0) {
-          throw new Error('無法從 Google Docs 抓取到任何文字，請確認文件內容非空。');
-        }
-
-        const titleText = titleEl ? titleEl.innerText : '未命名文章';
-        const subtitleText = (subtitleEl && subtitleEl !== titleEl) ? subtitleEl.innerText : '';
-
-        // 2. 抓取文章中的圖片網址
-        const imgElements = Array.from(doc.querySelectorAll('img'));
-        const imageUrls = imgElements.map(img => img.src);
-
-        // 填入標題與副標題
-        document.getElementById('doc-title').innerText = titleText;
-        document.getElementById('doc-subtitle').innerText = subtitleText;
-
-        // 分割內文至左右兩頁
-        const bodyParagraphs = paragraphs.slice(subtitleText ? 2 : 1);
-        const midPoint = Math.ceil(bodyParagraphs.length / 2);
-        
-        document.getElementById('doc-body-1').innerHTML = bodyParagraphs.slice(0, midPoint).map(p => `<p>${p}</p>`).join('');
-        document.getElementById('doc-body-2').innerHTML = bodyParagraphs.slice(midPoint).map(p => `<p>${p}</p>`).join('');
-
-        // 3. 將 4 張圖片依序填入固定位子
-        for (let i = 1; i <= 4; i++) {
-          const imgObj = document.getElementById(`img-${i}`);
-          if (imageUrls[i - 1]) {
-            imgObj.src = imageUrls[i - 1];
-          } else {
-            // 若文件中圖片不足 4 張，使用預設風景圖
-            imgObj.src = `https://picsum.photos/600/400?random=${i}`;
+        // 解析 CSV 資料
+        Papa.parse(csvText, {
+          header: true,
+          skipEmptyLines: true,
+          complete: function(results) {
+            articlesData = results.data;
+            if (articlesData.length === 0) {
+              document.getElementById('article-list').innerHTML = '<li>目前尚無文章</li>';
+              return;
+            }
+            renderSidebar();
+            // 預設讀取最新的第一篇文章
+            displayArticle(0);
           }
-        }
-
-        // 隱藏載入動畫
-        loadingEl.style.display = 'none';
-
-        // 4. 初始化 Page-Flip 翻頁效果
-        initPageFlip();
-
+        });
       } catch (err) {
         console.error('載入失敗:', err);
-        loadingEl.style.color = '#d9534f';
-        loadingEl.innerText = `⚠️ 載入文章失敗：${err.message}`;
+        document.getElementById('loading').innerText = '⚠️ 文章載入失敗，請檢查試算表發布連結。';
       }
     }
 
-    function initPageFlip() {
-      const isMobile = window.innerWidth <= 768;
-      
-      const pageFlip = new St.PageFlip(document.getElementById('magazine'), {
-        width: isMobile ? 360 : 450,
-        height: isMobile ? 550 : 620,
-        size: "fixed",
-        minWidth: 300,
-        maxWidth: 1000,
-        minHeight: 400,
-        maxHeight: 800,
-        maxShadowOpacity: 0.5,
-        showCover: true,
-        mobileScrollSupport: true
-      });
+    // 渲染左側目錄列表
+    function renderSidebar() {
+      const listEl = document.getElementById('article-list');
+      listEl.innerHTML = '';
 
-      pageFlip.loadFromHTML(document.querySelectorAll('.page'));
+      articlesData.forEach((item, index) => {
+        const li = document.createElement('li');
+        li.innerText = item.Title || `未命名文章 ${index + 1}`;
+        li.onclick = () => displayArticle(index);
+        if (index === 0) li.classList.add('active');
+        listEl.appendChild(li);
+      });
     }
 
-    window.addEventListener('DOMContentLoaded', loadGoogleDoc);
-  </script></body>
+    // 顯示指定索引的文章
+    function displayArticle(index) {
+      document.getElementById('loading').style.display = 'block';
+
+      // 高亮左側被點選的項目
+      const listItems = document.querySelectorAll('#article-list li');
+      listItems.forEach((li, i) => {
+        li.classList.toggle('active', i === index);
+      });
+
+      const article = articlesData[index];
+      const title = article.Title || '無標題';
+      const date = article.Date || '';
+      const rawContent = article.Content || '';
+
+      // 填入標題與日期
+      document.getElementById('doc-title').innerText = title;
+      document.getElementById('doc-subtitle').innerText = date;
+
+      // 1. 拆分每一行內文，將帶有 ### 的行轉為 <h3> 小標題，其餘轉為 <p>
+      const lines = rawContent.split('\n').filter(line => line.trim() !== '');
+      const formattedElements = lines.map(line => {
+        const trimmed = line.trim();
+        if (trimmed.startsWith('###')) {
+          const subTitleText = trimmed.replace(/^###\s*/, '');
+          return `<h3 class="section-subtitle">${subTitleText}</h3>`;
+        } else {
+          return `<p>${trimmed}</p>`;
+        }
+      });
+
+      // 2. 將內容元素均分到左右兩頁
+      const midPoint = Math.ceil(formattedElements.length / 2);
+
+      document.getElementById('doc-body-1').innerHTML = formattedElements.slice(0, midPoint).join('');
+      document.getElementById('doc-body-2').innerHTML = formattedElements.slice(midPoint).join('');
+
+      document.getElementById('loading').style.display = 'none';
+
+      // 重設或初始化翻頁套件
+      initOrUpdatePageFlip();
+    }
+
+    function initOrUpdatePageFlip() {
+      const isMobile = window.innerWidth <= 768;
+
+      if (!pageFlipInstance) {
+        pageFlipInstance = new St.PageFlip(document.getElementById('magazine'), {
+          width: isMobile ? 320 : 420,
+          height: isMobile ? 500 : 580,
+          size: "fixed",
+          minWidth: 300,
+          maxWidth: 1000,
+          minHeight: 400,
+          maxHeight: 800,
+          maxShadowOpacity: 0.5,
+          showCover: true,
+          mobileScrollSupport: true
+        });
+        pageFlipInstance.loadFromHTML(document.querySelectorAll('.page'));
+      } else {
+        // 若已初始化過，切換文章時回到第一頁 (封面)
+        pageFlipInstance.turnToPage(0);
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', loadArticles);
+  </script>
+</body>
 </html>
