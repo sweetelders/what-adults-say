@@ -173,10 +173,10 @@ body {
   word-break: break-word;
 }
 
-/* 標準段落縮排與對齊 */
+/* 標準段落縮排與對齊：所有段落一律縮排兩格 */
 .article-body p {
-  margin-bottom: 20px;
-  text-indent: 2em;
+  margin-bottom: 22px;
+  text-indent: 2em; /* 每一段開頭自動縮排空兩格 */
   text-align: justify;
 }
 
@@ -191,11 +191,6 @@ body {
   border-left: 4px solid #cbb26a; /* 金黃色質感豎線 */
   letter-spacing: 1px;
   line-height: 1.4;
-}
-
-/* 小標題緊接的第一段取消首行縮排 */
-.article-body .section-subtitle + p {
-  text-indent: 0;
 }
 
 /* 文章頁尾 */
