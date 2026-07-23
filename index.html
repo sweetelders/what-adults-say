@@ -5,8 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>高雄市四維長青學苑人物專欄 - 大人說</title>
   <link rel="stylesheet" href="styles.css">
-  <!-- 引入 StPageFlip 翻頁套件 -->
-  <script src="https://cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/js/page-flip.browser.js"></script>
   <!-- 引入 PapaParse 用於快速解析 CSV -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
 </head>
@@ -18,7 +16,7 @@
     <p>大人說的那些事 ｜ 文章專欄</p>
   </header>
 
-  <!-- 主要內容區：左側選單 + 右側雜誌 -->
+  <!-- 主要內容區：左側選單 + 右側單頁閱讀區 -->
   <div class="main-layout">
     
     <!-- 左側文章列表選單 -->
@@ -29,59 +27,36 @@
       </ul>
     </aside>
 
-    <!-- 右側雜誌閱讀區 -->
-    <main class="magazine-area">
+    <!-- 右側文章閱讀區 (直書單頁向下滾動) -->
+    <main class="reading-area">
       <div id="loading" class="loading">正在載入文章內容...</div>
 
-      <div class="magazine-container">
-        <div id="magazine" class="magazine">
-          
-          <!-- Page 1: 封面 -->
-          <div class="page page-cover">
-            <div class="page-content">
-              <div class="cover-tag">ESSAY & ARTICLE</div>
-              <h1 id="doc-title">請選擇文章</h1>
-              <p id="doc-subtitle" class="subtitle">---</p>
-            </div>
-          </div>
+      <!-- 文章卡片容器 -->
+      <article id="article-card" class="article-card" style="display: none;">
+        <!-- 文章頭部資訊 -->
+        <header class="article-header">
+          <div class="article-tag">ESSAY & ARTICLE</div>
+          <h1 id="doc-title" class="article-title"></h1>
+          <div id="doc-subtitle" class="article-meta"></div>
+        </header>
 
-          <!-- Page 2: 左頁 (前半段文字) -->
-          <div class="page">
-            <div class="page-content">
-              <span class="page-number">- 01 -</span>
-              <div class="article-body" id="doc-body-1"></div>
-            </div>
-          </div>
+        <!-- 文章內文主體 -->
+        <div id="doc-body" class="article-body"></div>
 
-          <!-- Page 3: 右頁 (後半段文字) -->
-          <div class="page">
-            <div class="page-content">
-              <span class="page-number">- 02 -</span>
-              <div class="article-body" id="doc-body-2"></div>
-            </div>
-          </div>
+        <!-- 文章頁尾標籤 -->
+        <footer class="article-footer">
+          <p>— END OF ARTICLE —</p>
+          <span>大人說的那些事</span>
+        </footer>
+      </article>
 
-          <!-- Page 4: 封底 -->
-          <div class="page page-back">
-            <div class="page-content">
-              <div class="back-footer">
-                <h3>END OF ARTICLE</h3>
-                <p>感謝閱讀 ｜ 大人說的那些事</p>
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </div>
     </main>
   </div>
 
   <script>
-    // 已更新為你的 Google 試算表 CSV 網址
     const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQWytixYJXzWPyNdLUBifTSZn33WLv89xBwAGeiYLaH2dJR-jtLmoVLOxsbql_sKObHHVylv62teioL/pub?output=csv';
 
     let articlesData = [];
-    let pageFlipInstance = null;
 
     async function fetchCSVData() {
       // 第一次嘗試：直接抓取
@@ -104,7 +79,6 @@
       try {
         const csvText = await fetchCSVData();
 
-        // 解析 CSV 資料
         Papa.parse(csvText, {
           header: true,
           skipEmptyLines: true,
@@ -143,7 +117,11 @@
 
     // 顯示指定索引的文章
     function displayArticle(index) {
-      document.getElementById('loading').style.display = 'block';
+      const loadingEl = document.getElementById('loading');
+      const articleCard = document.getElementById('article-card');
+      
+      loadingEl.style.display = 'block';
+      articleCard.style.display = 'none';
 
       // 高亮左側被點選的項目
       const listItems = document.querySelectorAll('#article-list li');
@@ -158,9 +136,9 @@
 
       // 填入標題與日期
       document.getElementById('doc-title').innerText = title;
-      document.getElementById('doc-subtitle').innerText = date;
+      document.getElementById('doc-subtitle').innerText = date ? `發佈日期：${date}` : '';
 
-      // 拆分每一行內文，將帶有 ### 的行轉為 <h3> 小標題，其餘轉為 <p>
+      // 解析內文：將 ### 行轉為 <h3>，其他轉為 <p>
       const lines = rawContent.split('\n').filter(line => line.trim() !== '');
       const formattedElements = lines.map(line => {
         const trimmed = line.trim();
@@ -172,39 +150,14 @@
         }
       });
 
-      // 將內容元素均分到左右兩頁
-      const midPoint = Math.ceil(formattedElements.length / 2);
+      // 直接填入單一文稿容器
+      document.getElementById('doc-body').innerHTML = formattedElements.join('');
 
-      document.getElementById('doc-body-1').innerHTML = formattedElements.slice(0, midPoint).join('');
-      document.getElementById('doc-body-2').innerHTML = formattedElements.slice(midPoint).join('');
+      loadingEl.style.display = 'none';
+      articleCard.style.display = 'block';
 
-      document.getElementById('loading').style.display = 'none';
-
-      // 重設或初始化翻頁套件
-      initOrUpdatePageFlip();
-    }
-
-    function initOrUpdatePageFlip() {
-      const isMobile = window.innerWidth <= 768;
-
-      if (!pageFlipInstance) {
-        pageFlipInstance = new St.PageFlip(document.getElementById('magazine'), {
-          width: isMobile ? 320 : 440,   // 桌機版單頁寬度 440px
-          height: isMobile ? 500 : 640,  // 桌機版單頁高度 640px (加大高度容納更多內容)
-          size: "fixed",
-          minWidth: 300,
-          maxWidth: 1000,
-          minHeight: 400,
-          maxHeight: 850,
-          maxShadowOpacity: 0.5,
-          showCover: true,
-          mobileScrollSupport: true
-        });
-        pageFlipInstance.loadFromHTML(document.querySelectorAll('.page'));
-      } else {
-        // 若已初始化過，切換文章時回到第一頁 (封面)
-        pageFlipInstance.turnToPage(0);
-      }
+      // 切換文章時自動回到頁面頂端
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     window.addEventListener('DOMContentLoaded', loadArticles);
