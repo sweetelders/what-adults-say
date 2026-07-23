@@ -76,18 +76,24 @@
     </div>
   </div>
 
-  <script>
-    // 已將你的真實 Google Docs 發布網址帶入
+<script>
     const GOOGLE_DOC_PUB_URL = 'https://docs.google.com/document/d/e/2PACX-1vQowupc3JSIMzxndNgHI1Dg6gTIJnAdtPSw87lKEwqDYXk5AaGSznDXBaOVjWcFqsStc-v_CZBv-BY0/pub';
 
     async function loadGoogleDoc() {
+      const loadingEl = document.getElementById('loading');
+      
       try {
-        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(GOOGLE_DOC_PUB_URL)}`;
+        // 使用更穩定的 corsproxy.io 代理服務
+        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(GOOGLE_DOC_PUB_URL)}`;
         const response = await fetch(proxyUrl);
-        const data = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(`HTTP 錯誤！狀態碼：${response.status}`);
+        }
 
+        const htmlText = await response.text();
         const parser = new DOMParser();
-        const doc = parser.parseFromString(data.contents, 'text/html');
+        const doc = parser.parseFromString(htmlText, 'text/html');
 
         // 1. 抓取文字與標題
         const titleEl = doc.querySelector('h1') || doc.querySelector('p');
@@ -97,10 +103,14 @@
           .map(p => p.innerText.trim())
           .filter(text => text.length > 0);
 
-        const titleText = titleEl ? titleEl.innerText : '未命名文章';
-        const subtitleText = subtitleEl ? subtitleEl.innerText : '';
+        if (paragraphs.length === 0) {
+          throw new Error('無法從 Google Docs 抓取到任何文字，請確認文件內容非空。');
+        }
 
-        // 2. 抓取文章中的 4 張圖片網址
+        const titleText = titleEl ? titleEl.innerText : '未命名文章';
+        const subtitleText = (subtitleEl && subtitleEl !== titleEl) ? subtitleEl.innerText : '';
+
+        // 2. 抓取文章中的圖片網址
         const imgElements = Array.from(doc.querySelectorAll('img'));
         const imageUrls = imgElements.map(img => img.src);
 
@@ -109,7 +119,7 @@
         document.getElementById('doc-subtitle').innerText = subtitleText;
 
         // 分割內文至左右兩頁
-        const bodyParagraphs = paragraphs.slice(2);
+        const bodyParagraphs = paragraphs.slice(subtitleText ? 2 : 1);
         const midPoint = Math.ceil(bodyParagraphs.length / 2);
         
         document.getElementById('doc-body-1').innerHTML = bodyParagraphs.slice(0, midPoint).map(p => `<p>${p}</p>`).join('');
@@ -121,18 +131,21 @@
           if (imageUrls[i - 1]) {
             imgObj.src = imageUrls[i - 1];
           } else {
+            // 若文件中圖片不足 4 張，使用預設風景圖
             imgObj.src = `https://picsum.photos/600/400?random=${i}`;
           }
         }
 
-        document.getElementById('loading').style.display = 'none';
+        // 隱藏載入動畫
+        loadingEl.style.display = 'none';
 
         // 4. 初始化 Page-Flip 翻頁效果
         initPageFlip();
 
       } catch (err) {
         console.error('載入失敗:', err);
-        document.getElementById('loading').innerText = '載入文章失敗，請檢查 Docs 發布網址。';
+        loadingEl.style.color = '#d9534f';
+        loadingEl.innerText = `⚠️ 載入文章失敗：${err.message}`;
       }
     }
 
@@ -156,6 +169,5 @@
     }
 
     window.addEventListener('DOMContentLoaded', loadGoogleDoc);
-  </script>
-</body>
+  </script></body>
 </html>
