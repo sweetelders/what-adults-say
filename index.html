@@ -83,10 +83,26 @@
     let articlesData = [];
     let pageFlipInstance = null;
 
-    async function loadArticles() {
+    async function fetchCSVData() {
+      // 第一次嘗試：直接抓取
       try {
-        const response = await fetch(GOOGLE_SHEET_CSV_URL);
-        const csvText = await response.text();
+        const res = await fetch(GOOGLE_SHEET_CSV_URL);
+        if (res.ok) return await res.text();
+      } catch (e) {
+        console.warn('直接抓取 CSV 失敗，嘗試使用代理伺服器...', e);
+      }
+
+      // 第二次嘗試：使用 CORS 代理伺服器
+      const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(GOOGLE_SHEET_CSV_URL)}`;
+      const proxyRes = await fetch(proxyUrl);
+      if (!proxyRes.ok) throw new Error(`HTTP 錯誤！狀態碼：${proxyRes.status}`);
+      return await proxyRes.text();
+    }
+
+    async function loadArticles() {
+      const loadingEl = document.getElementById('loading');
+      try {
+        const csvText = await fetchCSVData();
 
         // 解析 CSV 資料
         Papa.parse(csvText, {
@@ -94,8 +110,9 @@
           skipEmptyLines: true,
           complete: function(results) {
             articlesData = results.data;
-            if (articlesData.length === 0) {
+            if (!articlesData || articlesData.length === 0) {
               document.getElementById('article-list').innerHTML = '<li>目前尚無文章</li>';
+              loadingEl.innerText = '⚠️ 試算表中尚無資料';
               return;
             }
             renderSidebar();
@@ -105,7 +122,8 @@
         });
       } catch (err) {
         console.error('載入失敗:', err);
-        document.getElementById('loading').innerText = '⚠️ 文章載入失敗，請檢查試算表發布連結。';
+        loadingEl.style.color = '#d9534f';
+        loadingEl.innerText = `⚠️ 文章載入失敗：${err.message}`;
       }
     }
 
@@ -142,7 +160,7 @@
       document.getElementById('doc-title').innerText = title;
       document.getElementById('doc-subtitle').innerText = date;
 
-      // 1. 拆分每一行內文，將帶有 ### 的行轉為 <h3> 小標題，其餘轉為 <p>
+      // 拆分每一行內文，將帶有 ### 的行轉為 <h3> 小標題，其餘轉為 <p>
       const lines = rawContent.split('\n').filter(line => line.trim() !== '');
       const formattedElements = lines.map(line => {
         const trimmed = line.trim();
@@ -154,7 +172,7 @@
         }
       });
 
-      // 2. 將內容元素均分到左右兩頁
+      // 將內容元素均分到左右兩頁
       const midPoint = Math.ceil(formattedElements.length / 2);
 
       document.getElementById('doc-body-1').innerHTML = formattedElements.slice(0, midPoint).join('');
@@ -171,13 +189,13 @@
 
       if (!pageFlipInstance) {
         pageFlipInstance = new St.PageFlip(document.getElementById('magazine'), {
-          width: isMobile ? 320 : 420,
-          height: isMobile ? 500 : 580,
+          width: isMobile ? 320 : 440,   // 桌機版單頁寬度 440px
+          height: isMobile ? 500 : 640,  // 桌機版單頁高度 640px (加大高度容納更多內容)
           size: "fixed",
           minWidth: 300,
           maxWidth: 1000,
           minHeight: 400,
-          maxHeight: 800,
+          maxHeight: 850,
           maxShadowOpacity: 0.5,
           showCover: true,
           mobileScrollSupport: true

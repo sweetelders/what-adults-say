@@ -133,7 +133,7 @@ body {
 }
 
 .page-content {
-  padding: 32px 28px;
+  padding: 28px 24px; /* 邊界適度放寬，提供更多排版空間 */
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -144,7 +144,7 @@ body {
   font-size: 11px;
   color: #aaa;
   text-align: center;
-  margin-bottom: 18px;
+  margin-bottom: 14px;
   letter-spacing: 1px;
 }
 
@@ -202,36 +202,53 @@ body {
 }
 
 /* ==========================================
-   內文與小標題細節排版
+   內文與小標題細節排版（修正溢出截斷問題）
    ========================================== */
 .article-body {
-  font-size: 13.5px;
-  line-height: 1.85;
+  font-size: 13px;
+  line-height: 1.7;
   color: #2c2c2c;
   word-break: break-word;
+  overflow-y: auto; /* 核心修正：內容超出頁面高度時可向上/下滾動 */
+  padding-right: 6px;
+  flex: 1;
 }
 
-/* 普通段落縮排 */
+/* 客製化簡約滾動條 */
+.article-body::-webkit-scrollbar {
+  width: 4px;
+}
+
+.article-body::-webkit-scrollbar-thumb {
+  background: #cbb26a;
+  border-radius: 4px;
+}
+
+.article-body::-webkit-scrollbar-track {
+  background: #f1ede4;
+}
+
+/* 段落間距優化 */
 .article-body p {
-  margin-bottom: 14px;
+  margin-bottom: 10px;
   text-indent: 2em;
   text-align: justify;
 }
 
 /* 雜誌風小標題樣式（由 ### 觸發） */
 .article-body .section-subtitle {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: bold;
   color: #1f2421;
-  margin-top: 20px;
-  margin-bottom: 10px;
-  padding-left: 10px;
+  margin-top: 14px;
+  margin-bottom: 8px;
+  padding-left: 8px;
   border-left: 3.5px solid #cbb26a; /* 經典金色雜誌線條 */
   letter-spacing: 1px;
-  line-height: 1.35;
+  line-height: 1.3;
 }
 
-/* 小標題緊接的第一個段落自動取消首行縮排，排版更俐落 */
+/* 小標題緊接的第一個段落自動取消首行縮排 */
 .article-body .section-subtitle + p {
   text-indent: 0;
 }
@@ -250,11 +267,11 @@ body {
   }
 
   .page-content {
-    padding: 22px 18px;
+    padding: 20px 16px;
   }
 
   .article-body {
-    font-size: 13px;
-    line-height: 1.75;
+    font-size: 12.5px;
+    line-height: 1.65;
   }
 }
