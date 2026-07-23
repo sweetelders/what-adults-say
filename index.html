@@ -77,12 +77,11 @@
   </div>
 
   <script>
-    // 🔗 請替換成你在 Google Docs「發布到網路」獲取的網址
+    // 已將你的真實 Google Docs 發布網址帶入
     const GOOGLE_DOC_PUB_URL = 'https://docs.google.com/document/d/e/2PACX-1vQowupc3JSIMzxndNgHI1Dg6gTIJnAdtPSw87lKEwqDYXk5AaGSznDXBaOVjWcFqsStc-v_CZBv-BY0/pub';
 
     async function loadGoogleDoc() {
       try {
-        // 使用 AllOrigins CORS Proxy 來跨域抓取 Google 文件內容
         const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(GOOGLE_DOC_PUB_URL)}`;
         const response = await fetch(proxyUrl);
         const data = await response.json();
@@ -122,7 +121,6 @@
           if (imageUrls[i - 1]) {
             imgObj.src = imageUrls[i - 1];
           } else {
-            // 若圖片不滿 4 張的預設佔位圖
             imgObj.src = `https://picsum.photos/600/400?random=${i}`;
           }
         }
@@ -141,7 +139,6 @@
     function initPageFlip() {
       const isMobile = window.innerWidth <= 768;
       
-      // 平板/電腦顯示雙頁，手機自動切換為單頁
       const pageFlip = new St.PageFlip(document.getElementById('magazine'), {
         width: isMobile ? 360 : 450,
         height: isMobile ? 550 : 620,
