@@ -1,3 +1,7 @@
+/* ==========================================
+   大人說的那些事 - 電子雜誌整體樣式
+   ========================================== */
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -6,46 +10,122 @@
 
 body {
   background-color: #f4f1ea;
-  font-family: "Georgia", "Noto Serif TC", serif;
+  font-family: "Georgia", "Noto Serif TC", "PMingLiU", serif;
   color: #2b2b2b;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
   min-height: 100vh;
 }
 
+/* 頂部 Header 標題區 */
 .header-bar {
   text-align: center;
-  padding: 25px 10px 10px 10px;
+  padding: 24px 15px;
+  background-color: #e2ddd5;
+  border-bottom: 1px solid #d0c9bd;
 }
 
 .header-bar h1 {
   font-size: 24px;
-  letter-spacing: 4px;
-  font-weight: 700;
+  letter-spacing: 3px;
   color: #1a1a1a;
+  font-weight: 700;
 }
 
 .header-bar p {
   font-size: 12px;
-  color: #777;
+  color: #666;
+  margin-top: 6px;
   letter-spacing: 1px;
-  margin-top: 4px;
+}
+
+/* 主要雙欄佈局 (左側目錄 + 右側閱讀區) */
+.main-layout {
+  display: flex;
+  max-width: 1200px;
+  margin: 25px auto;
+  padding: 0 20px;
+  gap: 25px;
+}
+
+/* ==========================================
+   左側邊欄：文章目錄列表
+   ========================================== */
+.sidebar {
+  width: 260px;
+  background-color: #fdfbf7;
+  padding: 22px 18px;
+  border-radius: 4px;
+  border: 1px solid #e2ddd5;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  height: fit-content;
+}
+
+.sidebar h2 {
+  font-size: 15px;
+  margin-bottom: 16px;
+  color: #333;
+  border-bottom: 2px solid #cbb26a; /* 雜誌風格金黃色底線 */
+  padding-bottom: 6px;
+  letter-spacing: 1px;
+}
+
+.sidebar ul {
+  list-style: none;
+}
+
+.sidebar li {
+  font-size: 13.5px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #555;
+  line-height: 1.5;
+  border: 1px solid transparent;
+}
+
+.sidebar li:hover {
+  background-color: #eae6df;
+  color: #1a1a1a;
+}
+
+/* 當前點選的文章高亮狀態 */
+.sidebar li.active {
+  background-color: #1f2421;
+  color: #f4f1ea;
+  font-weight: bold;
+  border-color: #1f2421;
+}
+
+.loading-item {
+  font-size: 12px;
+  color: #888;
+  font-style: italic;
+}
+
+/* ==========================================
+   右側雜誌閱讀區與頁面樣式
+   ========================================== */
+.magazine-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .loading {
-  margin-top: 50px;
-  font-size: 14px;
+  font-size: 13px;
   color: #666;
+  margin-bottom: 12px;
 }
 
 .magazine-container {
-  margin: 20px auto;
   display: flex;
   justify-content: center;
+  width: 100%;
 }
 
-/* 雜誌單頁基礎設定 */
+/* 雜誌單頁通用基礎樣式 */
 .page {
   background-color: #fdfbf7;
   border: 1px solid #e2ddd5;
@@ -53,115 +133,128 @@ body {
 }
 
 .page-content {
-  padding: 30px;
+  padding: 32px 28px;
   height: 100%;
   display: flex;
   flex-direction: column;
-  position: relative;
+  box-sizing: border-box;
 }
 
 .page-number {
   font-size: 11px;
-  color: #999;
+  color: #aaa;
   text-align: center;
-  margin-bottom: 15px;
+  margin-bottom: 18px;
+  letter-spacing: 1px;
 }
 
-/* 封面樣式 */
+/* --- Page 1: 封面樣式 --- */
 .page-cover {
   background-color: #1f2421;
   color: #f4f1ea;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
 }
 
 .cover-tag {
   font-size: 10px;
-  letter-spacing: 2px;
+  letter-spacing: 3px;
   color: #cbb26a;
-  margin-bottom: 15px;
+  margin-bottom: 18px;
+  font-weight: bold;
 }
 
 .page-cover h1 {
-  font-size: 26px;
-  line-height: 1.3;
-  margin-bottom: 10px;
+  font-size: 24px;
+  line-height: 1.4;
+  margin-bottom: 14px;
+  font-weight: normal;
+  padding: 0 10px;
 }
 
 .page-cover .subtitle {
-  font-size: 13px;
+  font-size: 12px;
   color: #a0a5a0;
-  margin-bottom: 20px;
+  letter-spacing: 1px;
 }
 
-.cover-image-box {
-  width: 100%;
-  height: 320px;
-  overflow: hidden;
-  border-radius: 2px;
-}
-
-.cover-image-box img,
-.single-image-box img,
-.featured-image-box img,
-.back-image-box img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-/* 內文與圖片區域固定排版 */
-.article-body {
-  font-size: 13px;
-  line-height: 1.8;
-  color: #333;
-  margin-bottom: 15px;
-}
-
-.article-body p {
-  margin-bottom: 10px;
-  text-indent: 2em;
-}
-
-.single-image-box {
-  height: 160px;
-  margin-top: auto;
-}
-
-.featured-image-box {
-  height: 200px;
-  margin-bottom: 15px;
-}
-
-/* 封底樣式 */
+/* --- Page 4: 封底樣式 --- */
 .page-back {
   background-color: #eae6df;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   text-align: center;
 }
 
-.back-image-box {
-  height: 340px;
-  margin-bottom: 20px;
-}
-
 .back-footer h3 {
-  font-size: 14px;
+  font-size: 13px;
   letter-spacing: 2px;
+  color: #333;
 }
 
 .back-footer p {
-  font-size: 10px;
+  font-size: 11px;
   color: #777;
-  margin-top: 5px;
+  margin-top: 6px;
 }
 
-/* RWD 響應式：手機適配 */
+/* ==========================================
+   內文與小標題細節排版
+   ========================================== */
+.article-body {
+  font-size: 13.5px;
+  line-height: 1.85;
+  color: #2c2c2c;
+  word-break: break-word;
+}
+
+/* 普通段落縮排 */
+.article-body p {
+  margin-bottom: 14px;
+  text-indent: 2em;
+  text-align: justify;
+}
+
+/* 雜誌風小標題樣式（由 ### 觸發） */
+.article-body .section-subtitle {
+  font-size: 15px;
+  font-weight: bold;
+  color: #1f2421;
+  margin-top: 20px;
+  margin-bottom: 10px;
+  padding-left: 10px;
+  border-left: 3.5px solid #cbb26a; /* 經典金色雜誌線條 */
+  letter-spacing: 1px;
+  line-height: 1.35;
+}
+
+/* 小標題緊接的第一個段落自動取消首行縮排，排版更俐落 */
+.article-body .section-subtitle + p {
+  text-indent: 0;
+}
+
+/* ==========================================
+   響應式設計 (RWD 跨裝置適配)
+   ========================================== */
 @media (max-width: 768px) {
+  .main-layout {
+    flex-direction: column;
+    padding: 0 12px;
+  }
+  
+  .sidebar {
+    width: 100%;
+  }
+
   .page-content {
-    padding: 20px;
+    padding: 22px 18px;
   }
-  .cover-image-box {
-    height: 240px;
-  }
-  .single-image-box, .featured-image-box {
-    height: 140px;
+
+  .article-body {
+    font-size: 13px;
+    line-height: 1.75;
   }
 }
