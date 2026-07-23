@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>極簡風格電子雜誌</title>
+  <link rel="stylesheet" href="styles.css">
+  <!-- 引入 StPageFlip 翻頁套件 -->
+  <script src="https://cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/js/page-flip.browser.js"></script>
+</head>
+<body>
+
+  <div class="header-bar">
+    <h1>DIGITAL MAGAZINE</h1>
+    <p>翻閱最新專題與文章</p>
+  </div>
+
+  <!-- 載入中動畫 -->
+  <div id="loading" class="loading">正在從 Google Docs 載入雜誌內容...</div>
+
+  <!-- 雜誌主體容器 -->
+  <div class="magazine-container">
+    <div id="magazine" class="magazine">
+      
+      <!-- Page 1: 封面 -->
+      <div class="page page-cover">
+        <div class="page-content">
+          <div class="cover-tag">CULTURE & LIFESTYLE</div>
+          <h1 id="doc-title">文章標題載入中...</h1>
+          <p id="doc-subtitle" class="subtitle">副標題 / 日期</p>
+          <div class="cover-image-box">
+            <img id="img-1" src="" alt="封面照片">
+          </div>
+        </div>
+      </div>
+
+      <!-- Page 2: 左頁（圖文排版） -->
+      <div class="page">
+        <div class="page-content">
+          <span class="page-number">- 01 -</span>
+          <div class="article-body" id="doc-body-1">
+            <!-- 前半段文字由 JS 動態填入 -->
+          </div>
+          <div class="single-image-box">
+            <img id="img-2" src="" alt="插圖 1">
+          </div>
+        </div>
+      </div>
+
+      <!-- Page 3: 右頁（大圖與後半段文字） -->
+      <div class="page">
+        <div class="page-content">
+          <span class="page-number">- 02 -</span>
+          <div class="featured-image-box">
+            <img id="img-3" src="" alt="插圖 2">
+          </div>
+          <div class="article-body" id="doc-body-2">
+            <!-- 後半段文字由 JS 動態填入 -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Page 4: 封底 (搭配第4張圖) -->
+      <div class="page page-back">
+        <div class="page-content">
+          <div class="back-image-box">
+            <img id="img-4" src="" alt="封底照片">
+          </div>
+          <div class="back-footer">
+            <h3>THANK YOU FOR READING</h3>
+            <p>Powered by Google Docs & GitHub Pages</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // 🔗 請替換成你在 Google Docs「發布到網路」獲取的網址
+    const GOOGLE_DOC_PUB_URL = 'https://docs.google.com/document/d/e/2PACX-1vQowupc3JSIMzxndNgHI1Dg6gTIJnAdtPSw87lKEwqDYXk5AaGSznDXBaOVjWcFqsStc-v_CZBv-BY0/pub';
+
+    async function loadGoogleDoc() {
+      try {
+        // 使用 AllOrigins CORS Proxy 來跨域抓取 Google 文件內容
+        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(GOOGLE_DOC_PUB_URL)}`;
+        const response = await fetch(proxyUrl);
+        const data = await response.json();
+
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(data.contents, 'text/html');
+
+        // 1. 抓取文字與標題
+        const titleEl = doc.querySelector('h1') || doc.querySelector('p');
+        const subtitleEl = doc.querySelector('h2') || doc.querySelectorAll('p')[1];
+        
+        const paragraphs = Array.from(doc.querySelectorAll('p'))
+          .map(p => p.innerText.trim())
+          .filter(text => text.length > 0);
+
+        const titleText = titleEl ? titleEl.innerText : '未命名文章';
+        const subtitleText = subtitleEl ? subtitleEl.innerText : '';
+
+        // 2. 抓取文章中的 4 張圖片網址
+        const imgElements = Array.from(doc.querySelectorAll('img'));
+        const imageUrls = imgElements.map(img => img.src);
+
+        // 填入標題與副標題
+        document.getElementById('doc-title').innerText = titleText;
+        document.getElementById('doc-subtitle').innerText = subtitleText;
+
+        // 分割內文至左右兩頁
+        const bodyParagraphs = paragraphs.slice(2);
+        const midPoint = Math.ceil(bodyParagraphs.length / 2);
+        
+        document.getElementById('doc-body-1').innerHTML = bodyParagraphs.slice(0, midPoint).map(p => `<p>${p}</p>`).join('');
+        document.getElementById('doc-body-2').innerHTML = bodyParagraphs.slice(midPoint).map(p => `<p>${p}</p>`).join('');
+
+        // 3. 將 4 張圖片依序填入固定位子
+        for (let i = 1; i <= 4; i++) {
+          const imgObj = document.getElementById(`img-${i}`);
+          if (imageUrls[i - 1]) {
+            imgObj.src = imageUrls[i - 1];
+          } else {
+            // 若圖片不滿 4 張的預設佔位圖
+            imgObj.src = `https://picsum.photos/600/400?random=${i}`;
+          }
+        }
+
+        document.getElementById('loading').style.display = 'none';
+
+        // 4. 初始化 Page-Flip 翻頁效果
+        initPageFlip();
+
+      } catch (err) {
+        console.error('載入失敗:', err);
+        document.getElementById('loading').innerText = '載入文章失敗，請檢查 Docs 發布網址。';
+      }
+    }
+
+    function initPageFlip() {
+      const isMobile = window.innerWidth <= 768;
+      
+      // 平板/電腦顯示雙頁，手機自動切換為單頁
+      const pageFlip = new St.PageFlip(document.getElementById('magazine'), {
+        width: isMobile ? 360 : 450,
+        height: isMobile ? 550 : 620,
+        size: "fixed",
+        minWidth: 300,
+        maxWidth: 1000,
+        minHeight: 400,
+        maxHeight: 800,
+        maxShadowOpacity: 0.5,
+        showCover: true,
+        mobileScrollSupport: true
+      });
+
+      pageFlip.loadFromHTML(document.querySelectorAll('.page'));
+    }
+
+    window.addEventListener('DOMContentLoaded', loadGoogleDoc);
+  </script>
+</body>
+</html>
