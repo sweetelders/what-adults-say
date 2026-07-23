@@ -136,7 +136,7 @@
 
       // 填入標題與日期
       document.getElementById('doc-title').innerText = title;
-      document.getElementById('doc-subtitle').innerText = date ? `發佈日期：${date}` : '';
+      document.getElementById('doc-subtitle').innerText = date ? `受訪者：${date}` : '';
 
       // 解析內文：先依據雙換行切分大段落，若無雙換行則依單換行切分
       const paragraphs = rawContent.split(/\n\s*\n/).filter(p => p.trim() !== '');
