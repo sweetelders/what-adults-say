@@ -1,5 +1,5 @@
 /* ==========================================
-   大人說的那些事 - 單頁長圖文風格樣式
+   大人說的那些事 - 單頁長圖文風格樣式 (強制縮排版)
    ========================================== */
 
 * {
@@ -59,14 +59,14 @@ body {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
   height: fit-content;
   position: sticky;
-  top: 30px; /* 向上滾動時固定邊欄 */
+  top: 30px;
 }
 
 .sidebar h2 {
   font-size: 16px;
   margin-bottom: 18px;
   color: #333;
-  border-bottom: 2px solid #cbb26a; /* 金黃色雜誌質感底線 */
+  border-bottom: 2px solid #cbb26a;
   padding-bottom: 8px;
   letter-spacing: 1px;
 }
@@ -92,7 +92,6 @@ body {
   color: #1a1a1a;
 }
 
-/* 當前點選的文章高亮狀態 */
 .sidebar li.active {
   background-color: #1f2421;
   color: #f4f1ea;
@@ -111,7 +110,7 @@ body {
    ========================================== */
 .reading-area {
   flex: 1;
-  min-width: 0; /* 避免 flex 子元素溢出 */
+  min-width: 0;
 }
 
 .loading {
@@ -124,7 +123,6 @@ body {
   border: 1px solid #e2ddd5;
 }
 
-/* 文章白底卡片 */
 .article-card {
   background-color: #fdfbf7;
   border: 1px solid #e2ddd5;
@@ -133,7 +131,6 @@ body {
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
 }
 
-/* 文章頭部標題區 */
 .article-header {
   border-bottom: 1px dashed #d5cfc2;
   padding-bottom: 25px;
@@ -164,7 +161,7 @@ body {
 }
 
 /* ==========================================
-   文章內文與小標題細節排版
+   文章內文與小標題細節排版 (強效縮排)
    ========================================== */
 .article-body {
   font-size: 16px;
@@ -173,10 +170,10 @@ body {
   word-break: break-word;
 }
 
-/* 標準段落縮排與對齊：所有段落一律縮排兩格 */
+/* 基礎段落縮排：使用 !important 覆蓋任何可能衝突的舊樣式 */
 .article-body p {
   margin-bottom: 22px;
-  text-indent: 2em; /* 每一段開頭自動縮排空兩格 */
+  text-indent: 2em !important; 
   text-align: justify;
 }
 
@@ -188,9 +185,15 @@ body {
   margin-top: 35px;
   margin-bottom: 15px;
   padding-left: 12px;
-  border-left: 4px solid #cbb26a; /* 金黃色質感豎線 */
+  border-left: 4px solid #cbb26a;
   letter-spacing: 1px;
   line-height: 1.4;
+}
+
+/* 🌟 關鍵修正：明確指定小標題／標題後面的第一段強制縮排 2em */
+.article-body .section-subtitle + p,
+.article-body h3 + p {
+  text-indent: 2em !important;
 }
 
 /* 文章頁尾 */
