@@ -12,8 +12,8 @@
 
   <!-- 頂部標題區 -->
   <header class="header-bar">
-    <h1>WHAT ADULTS SAY</h1>
-    <p>大人說的那些事 ｜ 文章專欄</p>
+    <h1>大人說</h1>
+    <p>高雄市四維長青學苑人物專欄</p>
   </header>
 
   <!-- 主要內容區：左側選單 + 右側單頁閱讀區 -->
@@ -21,7 +21,7 @@
     
     <!-- 左側文章列表選單 -->
     <aside class="sidebar">
-      <h2>📚 文章目錄</h2>
+      <h2>📚 目錄</h2>
       <ul id="article-list">
         <li class="loading-item">載入文章列表中...</li>
       </ul>
@@ -35,7 +35,7 @@
       <article id="article-card" class="article-card" style="display: none;">
         <!-- 文章頭部資訊 -->
         <header class="article-header">
-          <div class="article-tag">ESSAY & ARTICLE</div>
+          <div class="article-tag">今天說什麼</div>
           <h1 id="doc-title" class="article-title"></h1>
           <div id="doc-subtitle" class="article-meta"></div>
         </header>
@@ -45,8 +45,8 @@
 
         <!-- 文章頁尾標籤 -->
         <footer class="article-footer">
-          <p>— END OF ARTICLE —</p>
-          <span>大人說的那些事</span>
+          <p>— FIN —</p>
+          <span>大人說©高雄市四維長青學苑</span>
         </footer>
       </article>
 
@@ -138,19 +138,21 @@
       document.getElementById('doc-title').innerText = title;
       document.getElementById('doc-subtitle').innerText = date ? `發佈日期：${date}` : '';
 
-      // 解析內文：將 ### 行轉為 <h3>，其他轉為 <p>
-      const lines = rawContent.split('\n').filter(line => line.trim() !== '');
-      const formattedElements = lines.map(line => {
-        const trimmed = line.trim();
+      // 解析內文：先依據雙換行切分大段落，若無雙換行則依單換行切分
+      const paragraphs = rawContent.split(/\n\s*\n/).filter(p => p.trim() !== '');
+
+      const formattedElements = paragraphs.map(para => {
+        const trimmed = para.trim();
         if (trimmed.startsWith('###')) {
           const subTitleText = trimmed.replace(/^###\s*/, '');
           return `<h3 class="section-subtitle">${subTitleText}</h3>`;
         } else {
-          return `<p>${trimmed}</p>`;
+      // 將段落內部的單換行轉為 <br>，保持段落內部換行
+      const contentWithBr = trimmed.replace(/\n/g, '<br>');
+      return `<p>${contentWithBr}</p>`;
         }
       });
 
-      // 直接填入單一文稿容器
       document.getElementById('doc-body').innerHTML = formattedElements.join('');
 
       loadingEl.style.display = 'none';
